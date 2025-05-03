@@ -5,10 +5,13 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// API endpoint
 app.post('/chat', async (req, res) => {
   const userMessage = req.body.message;
 
@@ -27,13 +30,17 @@ app.post('/chat', async (req, res) => {
       }
     );
 
-    res.json({ reply: response.data.choices[0].message.content });
+    const botReply = response.data.choices[0].message.content.trim();
+    res.json({ reply: botReply });
+
   } catch (err) {
-    console.error(err.response?.data || err.message);
-    res.status(500).json({ reply: 'Error from OpenAI.' });
+    console.error('OpenAI error:', err.response?.data || err.message || err);
+    res.status(500).json({ reply: 'Error from OpenAI. Check your server logs.' });
   }
 });
 
+// Server start
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server is running at http://localhost:${PORT}`));
-
+app.listen(PORT, () => {
+  console.log(`✅ Server is running at http://localhost:${PORT}`);
+});
